@@ -37,7 +37,7 @@ Your terminal prompt should now start with `(venv)`. With that showing:
 ```bash
 pip install -r requirements.txt
 mkdir -p .streamlit
-copy .streamlit/secrets.toml.example .streamlit/secrets.toml
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 ```
 
 Every time you come back to test locally, reactivate the venv first (the activate

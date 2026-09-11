@@ -767,36 +767,42 @@ TOOLS = {
         "extract_fn": fdx_utils.extract_full_script,
         "write_report": write_comedy_report, "render": render_comedy,
         "file_suffix": "comedy",
+        "description": "Goes scene by scene to judge whether the comedy is landing, matched to this script's own comedic style -- not generic joke notes.",
     },
     "Dialogue Craft": {
         "prompt": DIALOGUE_PROMPT, "json_instructions": DIALOGUE_JSON,
         "extract_fn": fdx_utils.extract_tagged_script,
         "write_report": write_dialogue_report, "render": render_dialogue,
         "file_suffix": "dialogue_craft",
+        "description": "Flags on-the-nose lines, filler, and missed subtext, with a concrete rewrite suggested for each.",
     },
     "Hero's Journey Editor": {
         "prompt": HERO_PROMPT, "json_instructions": HERO_JSON,
         "extract_fn": fdx_utils.extract_full_script,
         "write_report": write_hero_report, "render": render_hero,
         "file_suffix": "heros_journey",
+        "description": "Checks the story's structure against the 12 stages of the Hero's Journey and notes what's present, weak, or missing.",
     },
     "Plot Hole Editor": {
         "prompt": PLOTHOLE_PROMPT, "json_instructions": PLOTHOLE_JSON,
         "extract_fn": fdx_utils.extract_full_script,
         "write_report": write_plothole_report, "render": render_plothole,
         "file_suffix": "plotholes",
+        "description": "Hunts for continuity and logic problems -- things a sharp-eyed viewer would notice don't add up.",
     },
     "Readability Editor": {
         "prompt": READABILITY_PROMPT, "json_instructions": READABILITY_JSON,
         "extract_fn": fdx_utils.extract_full_script,
         "write_report": write_readability_report, "render": render_readability,
         "file_suffix": "readability",
+        "description": "Simulates a first-time reader's experience -- where the script grips, drags, confuses, or loses momentum.",
     },
     "Spelling & Grammar": {
         "prompt": SPELLING_PROMPT, "json_instructions": SPELLING_JSON,
         "extract_fn": fdx_utils.extract_tagged_script,
         "write_report": write_spelling_report, "render": render_spelling,
         "file_suffix": "spellcheck",
+        "description": "Proofreads for genuine spelling, missing-word, and repeated-word slips -- dialogue's natural fragments and dialect are left alone.",
     },
 }
 
@@ -853,7 +859,6 @@ MAX_OUTPUT_TOKENS = int(st.secrets.get("MAX_OUTPUT_TOKENS", 16000))
 # ---------- Optional run logging to a Google Sheet ----------
 def log_run(fdx_filename: str, mode: str, status: str, error_msg: str = "", notes: str = "") -> None:
     if "gcp_service_account" not in st.secrets:
-        st.sidebar.warning("DEBUG: gcp_service_account not found in secrets at all.")
         return
     try:
         import gspread
@@ -873,8 +878,8 @@ def log_run(fdx_filename: str, mode: str, status: str, error_msg: str = "", note
             st.session_state.get("user_name", "unknown"),
             fdx_filename, mode, status, error_msg, notes,
         ])
-    except Exception as e:
-        st.sidebar.warning(f"DEBUG: logging failed -- {type(e).__name__}: {e}")
+    except Exception:
+        pass
 
 
 def save_upload_to_tempfile(uploaded_file) -> str:
@@ -892,14 +897,19 @@ st.sidebar.write(f"Signed in as **{st.session_state['user_name']}**")
 st.sidebar.write(f"Runs left today: **{credits_left()}**")
 mode = st.sidebar.selectbox("Choose a tool", list(TOOLS.keys()))
 
+cfg = TOOLS[mode]
+
 st.title(f"AI Writers' Room \u2014 {mode}")
+st.caption(cfg["description"])
 
 if credits_left() <= 0:
     st.error("Daily usage limit reached for this session. Please try again tomorrow.")
     st.stop()
 
-cfg = TOOLS[mode]
-prompt = st.text_area("Analysis instructions", value=cfg["prompt"], height=220)
+prompt = st.text_area(
+    "Analysis instructions: DO NOT EDIT unless you know what you are doing!",
+    value=cfg["prompt"], height=220,
+)
 uploaded = st.file_uploader("Upload a .fdx file", type=["fdx"], key=f"upload_{mode}")
 
 run_key = f"result_{mode}"
