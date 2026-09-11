@@ -853,6 +853,7 @@ MAX_OUTPUT_TOKENS = int(st.secrets.get("MAX_OUTPUT_TOKENS", 16000))
 # ---------- Optional run logging to a Google Sheet ----------
 def log_run(fdx_filename: str, mode: str, status: str, error_msg: str = "", notes: str = "") -> None:
     if "gcp_service_account" not in st.secrets:
+        st.sidebar.warning("DEBUG: gcp_service_account not found in secrets at all.")
         return
     try:
         import gspread
@@ -869,8 +870,8 @@ def log_run(fdx_filename: str, mode: str, status: str, error_msg: str = "", note
             st.session_state.get("user_name", "unknown"),
             fdx_filename, mode, status, error_msg, notes,
         ])
-    except Exception:
-        pass
+    except Exception as e:
+        st.sidebar.warning(f"DEBUG: logging failed -- {type(e).__name__}: {e}")
 
 
 def save_upload_to_tempfile(uploaded_file) -> str:
