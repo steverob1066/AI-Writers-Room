@@ -861,7 +861,10 @@ def log_run(fdx_filename: str, mode: str, status: str, error_msg: str = "", note
 
         creds = Credentials.from_service_account_info(
             st.secrets["gcp_service_account"],
-            scopes=["https://www.googleapis.com/auth/spreadsheets"],
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive",
+            ],
         )
         gc = gspread.authorize(creds)
         sheet = gc.open(st.secrets.get("LOG_SHEET_NAME", "AI Writers Room Logs")).sheet1
